@@ -1,0 +1,88 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List of Categories</h2>
+
+<div id="grid"></div>
+<script>
+$(function () {
+    $("#grid").kendoGrid({
+        height: 400,
+        columns: [
+            "CategoryName",
+            "Description",
+            { command: "destroy", title: "Delete", width: "110px" }
+        ],
+        editable: true, // enable editing
+        pageable: {
+            refresh: true,
+            pageSizes: true,
+            buttonCount: 10
+        },
+        sortable: true,
+        filterable: true,
+        toolbar: ["create", "save", "cancel"], // specify toolbar commands
+        dataSource: {
+            pageSize: 10,
+            schema: {
+                model: { // define the model of the data source. Required for validation and property types.
+                    id: "CategoryID",
+                    fields: {
+                        CategoryID: { editable: false, nullable: true },
+                        CategoryName: { validation: { required: true } },
+                        Description: { type: "string", validation: { required: true } },
+                    }
+                }
+            },
+            batch: true, // enable batch editing - changes will be saved when the user clicks the "Save changes" button
+            transport: {
+                create: {
+                    url: "@Url.Action("Create", "Category")", //specify the URL which should create new records. This is the Create method of the HomeController.
+                    type: "POST" //use HTTP POST request as the default GET is not allowed for ASMX
+                },
+                read: {
+                    url: "@Url.Action("Read", "Category")", //specify the URL which should return the records. This is the Read method of the HomeController.
+                    contentType: "application/json",
+                    type: "POST" //use HTTP POST request as by default GET is not allowed by ASP.NET MVC
+                },
+                update: {
+                    url:"@Url.Action("Update", "Category")", //specify the URL which should update the records. This is the Update method of the HomeController.
+                    type: "POST" //use HTTP POST request as by default GET is not allowed by ASP.NET MVC
+                },
+                destroy: {
+                    url: "@Url.Action("Destroy", "Category")", //specify the URL which should destroy the records. This is the Destroy method of the HomeController.
+                    type: "POST" //use HTTP POST request as by default GET is not allowed by ASP.NET MVC
+                },
+                parameterMap: function(data, operation) {
+                    if (operation != "read") {
+                        // post the products so the ASP.NET DefaultModelBinder will understand them:
+
+                        // products[0].Name="name"
+                        // products[0].ProductID =1
+                        // products[1].Name="name"
+                        // products[1].ProductID =1
+
+                        var result = {};
+
+                        for (var i = 0; i < data.models.length; i++) {
+                            var category = data.models[i];
+
+                            for (var member in category) {
+                                result["categories[" + i + "]." + member] = category[member];
+                            }
+                        }
+
+                        return result;
+                    } else {
+                        return JSON.stringify(data)
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+

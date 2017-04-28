@@ -1,0 +1,256 @@
+﻿@model KendoJSGrid.Models.ProductViewModel
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Nuevo Piloto
+    </div>
+    <br />
+    @using (Html.BeginForm("Create", "Product",
+            new { ReturnUrl = ViewBag.ReturnUrl },
+            FormMethod.Post, new { @class = "form-horizontal" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProductName, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProductName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProductName, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.SupplierID, new { @class = "col-sm-2 control-label" })
+            <div class="col-sm-1">
+                <span id="btn" class="k-button">+</span>
+            </div>
+            <div class="col-sm-8">
+                @Html.HiddenFor(model => model.SupplierID)
+                <input id="CompanyName" class="form-control" type="text" value="" name="CompanyName" style="width:250px" disabled>
+                @Html.ValidationMessageFor(model => model.SupplierID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CategoryID, new { @class = "col-sm-2 control-label" })
+            <div class="col-sm-10">
+                @Html.HiddenFor(model => model.CategoryID)
+                <input id="categories" style="width: 30%" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.QuantityPerUnit, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.QuantityPerUnit, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.QuantityPerUnit, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.UnitPrice, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.UnitPrice, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.UnitPrice, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.UnitsInStock, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.UnitsInStock, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.UnitsInStock, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.UnitsOnOrder, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.UnitsOnOrder, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.UnitsOnOrder, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ReorderLevel, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ReorderLevel, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ReorderLevel, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Discontinued, htmlAttributes: new { @class = "col-sm-2 control-label" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.Discontinued)
+                    @Html.ValidationMessageFor(model => model.Discontinued, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+        </div>
+
+    }
+</div>
+
+<div id="window">
+    <h4>Choose Supplier</h4>
+    <div id="gridSupplier" style="height:auto"></div>
+
+</div>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        var dataSourceCategory = new kendo.data.DataSource({
+            transport: {
+                read: function (op) {
+                    // Subsequent runs use jquery.ajax for loading the data
+                    $.ajax({
+                        type: "POST",
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: "json",
+                        url: '@Url.Action("getJsonCategories", "Product")',
+                        success: function (result) {
+                            //console.log(result);
+                            // Return loaded data
+                            op.success(result);
+                        },
+                        error: function (result) {
+                            op.error(result);
+                        }
+                    });
+                }
+            },
+            schema: {
+                model: {
+                    fields: {
+                        CategoryID: { type: "number" },
+                        CategoryName: { type: "string" }
+                    }
+                }
+            }
+        });
+
+        $("#categories").kendoDropDownList({
+            dataTextField: "CategoryName",
+            dataValueField: "CategoryID",
+            dataSource: dataSourceCategory,
+        });
+
+        var wnd = $("#window").kendoWindow({
+            width: "900px",
+            height: "470px",
+            title: "Providers List",
+            actions: [
+                    "Minimize",
+                    "Maximize",
+                    "Close"
+                            ],
+            visible: false
+        }).data("kendoWindow");
+
+
+        $("#btn").click(function () {
+            wnd.center().open();
+        });
+
+        function onChange() {
+
+            var entityGrid = $("#gridSupplier").data("kendoGrid");
+            var rows = entityGrid.select();
+            rows.each(function (index, row) {
+                var selectedItem = entityGrid.dataItem(row);
+
+                var idSupplier = selectedItem.SupplierID;
+                var supplierName = selectedItem.CompanyName;
+
+                console.log(idSupplier + supplierName);
+
+                $("#SupplierID").val(idSupplier);
+                $("#CompanyName").val(supplierName);
+
+            });
+            wnd.close();
+        }
+
+        var dataSourceSupplier = new kendo.data.DataSource({
+            pageSize: 10,
+            transport: {
+                read: function (op) {
+                    // Subsequent runs use jquery.ajax for loading the data
+                    $.ajax({
+                        type: "POST",
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: "json",
+                        url: '@Url.Action("getJsonSuppliers", "Product")',
+                        success: function (result) {
+
+                            op.success(result);
+                        },
+                        error: function (result) {
+                            op.error(result);
+                        }
+                    });
+                }
+            },
+            schema: {
+                model: {
+                    fields: {
+                        SupplierID: { type: "number" },
+                        CompanyName: { type: "string" }
+                    }
+                }
+            }
+        });
+
+        $("#gridSupplier").kendoGrid({
+            dataSource: dataSourceSupplier,
+            scrollable: true,
+            sortable: true,
+            filterable: true,
+            pageable: {
+                refresh: true,
+                pageSizes: true,
+                buttonCount: 5
+            },
+            change: onChange,
+            selectable: "multiple",
+            columns: [
+                        {
+                            field: "SupplierID",
+                            title: "Id",
+                            width: 50
+                        },
+                        {
+                            field: "CompanyName",
+                            title: "Nombre",
+                            width: 300
+                        }
+                        ]
+        });
+
+    });
+</script>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
+

@@ -1,0 +1,55 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>List of Suppliers</h2>
+
+@Html.ActionLink("Create New Shipper", "Create", "Shipper", new { @class = "btn btn-primary" })
+<br />
+<br />
+<div id="grid"></div>
+<script>
+    $(function () {
+
+        var datasource = new kendo.data.DataSource({
+            pageSize: 15,
+            batch: true, // enable batch editing - changes will be saved when the user clicks the "Save changes" button
+            transport: {
+                read: {
+                    url: "@Url.Action("Read", "Supplier")", //specify the URL which should return the records. This is the Read method of the HomeController.
+                    contentType: "application/json",
+                    type: "POST" //use HTTP POST request as by default GET is not allowed by ASP.NET MVC
+                },
+            }
+        });
+
+
+        $("#grid").kendoGrid({
+        dataSource: datasource,
+        height: 500,
+        columns: [
+            "CompanyName",
+            "ContactName",
+            "ContactTitle",
+            "Address",
+            "City",
+            {
+                field: "SupplierID",
+                title: "&nbsp",
+                template: '<a class="k-button k-button-icontext k-grid-edit" href="/Supplier/Edit?id=#=SupplierID#">Edit</a> <a class="k-button k-button-icontext k-grid-delete" href="Remove?id=#=SupplierID#">Remove</a>'
+            },
+        ],
+        pageable: {
+            refresh: true,
+            pageSizes: true,
+            buttonCount: 15
+        },
+        sortable: true,
+        filterable: true,
+       
+    });
+});
+</script>
+
